@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const db = require("./db");
 
 const app = express();
@@ -11,11 +12,12 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Test route
+// Serve frontend files from the frontend folder
+app.use(express.static(path.join(__dirname, "../frontend")));
+
+// Homepage
 app.get("/", (req, res) => {
-res.json({
-message: "CED TECH Product Showcase API is running!"
-});
+res.sendFile(path.join(__dirname, "../frontend/index.html"));
 });
 
 // 1. GET ALL PRODUCTS
@@ -27,6 +29,7 @@ const products = db.prepare(
 
     res.json(products);
 } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Failed to retrieve products." });
 }
 
@@ -39,12 +42,14 @@ const product = db.prepare(
 "SELECT * FROM products WHERE id = ?"
 ).get(req.params.id);
 
+
     if (!product) {
         return res.status(404).json({ error: "Product not found." });
     }
 
     res.json(product);
 } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Failed to retrieve product." });
 }
 
@@ -103,6 +108,7 @@ description
 
     res.status(201).json(newProduct);
 } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Failed to create product." });
 }
 
@@ -170,8 +176,10 @@ const existingProduct = db.prepare(
 
     res.json(updatedProduct);
 } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Failed to update product." });
 }
+
 
 });
 
@@ -191,9 +199,9 @@ const result = db.prepare(
         id: Number(req.params.id)
     });
 } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Failed to delete product." });
 }
-
 
 });
 
